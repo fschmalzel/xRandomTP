@@ -15,6 +15,9 @@ import org.bukkit.entity.Player;
 
 import com.gmail.xlifehd.xrandomtp.Main;
 
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
+
 public class RandomTP implements CommandExecutor {
 	
 	@Override
@@ -36,7 +39,28 @@ public class RandomTP implements CommandExecutor {
 				long cooldown = isOnCooldown( player.getUniqueId() );
 				
 				if ( cooldown <= 0 ) {
-					randomTeleport( player );
+					double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
+					if ( cost > 0 ) {
+						//Withdraw money and teleport if transaction succeeded 
+						Economy econ = Main.getEconomy();
+						EconomyResponse r = econ.withdrawPlayer(player, cost);
+						
+						if ( r.transactionSuccess() ) {
+							//Check if teleport succeeded
+							if ( randomTeleport( player ) ) {
+								//If not return money
+								
+								player.sendMessage(Main.infoPrefix + "You have been teleported randomly! This cost you: " + econ.format(cost) + "!");
+							} else {
+								player.sendMessage(Main.infoPrefix + "Couldn't find a safe spot! Please try again!");
+								econ.depositPlayer(player, cost);
+							}
+						} else {
+							sender.sendMessage(Main.errorPrefix + "You don't have enough money!");
+						}
+					} else {
+						randomTeleport( player );
+					}
 				} else {
 					//Inform player about cooldown
 					DecimalFormat df = new DecimalFormat("#.##");
@@ -61,7 +85,7 @@ public class RandomTP implements CommandExecutor {
 		
 	}
 	
-	private void randomTeleport ( Player player ) {
+	private boolean randomTeleport ( Player player ) {
 		//Loading the config
 		FileConfiguration config = Main.getPlugin().getConfig();
 		int maxRadius = config.getInt( "border.maxRadius" );
@@ -123,11 +147,11 @@ public class RandomTP implements CommandExecutor {
 			//Teleporting the player
 			player.teleport( randomLoc );
 			
-			//Informing the player
-			player.sendMessage(Main.infoPrefix + "You have been teleported randomly!");
+			return true;
 			
 		} else {
-			player.sendMessage(Main.infoPrefix + "Couldn't find a safe spot! Please try again!");
+			
+			return false;
 		}
 	}
 	
