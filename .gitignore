@@ -16,3 +16,5 @@ hs_err_pid*
 target/maven-archiver/pom.properties
 target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
 *.lst
+target/classes/plugin.yml
+target/maven-archiver/pom.properties

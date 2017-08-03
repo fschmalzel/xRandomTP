@@ -254,14 +254,14 @@ public class RandomTP implements CommandExecutor {
 			
 			//Check if cooldown is already over
 			if ( (currentTime - timestamp) > cooldown ) {
-				return true;
+				return false;
 			}
 			
 		} else {
-			return true;
+			return false;
 		}
 		
-		return false;
+		return true;
 	}
 	
 	private long cooldownTimeLeft( UUID uuid ) {
