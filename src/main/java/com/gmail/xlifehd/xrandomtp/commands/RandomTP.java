@@ -40,6 +40,7 @@ public class RandomTP implements CommandExecutor {
 						
 						UUID uuid = player.getUniqueId();
 						resetCooldown(uuid);
+						player.sendMessage(Main.infoPrefix + "Your cooldown has been reset!");
 						
 					} else {
 						

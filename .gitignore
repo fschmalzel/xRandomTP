@@ -18,3 +18,5 @@ target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputF
 *.lst
 target/classes/plugin.yml
 target/maven-archiver/pom.properties
+target/classes/plugin.yml
+target/maven-archiver/pom.properties
