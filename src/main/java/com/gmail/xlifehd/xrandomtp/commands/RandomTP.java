@@ -54,18 +54,18 @@ public class RandomTP implements CommandExecutor {
 				
 				//Get UUID
 				UUID uuid = player.getUniqueId();
-				
+				boolean ignoreCooldown = player.hasPermission("xrandomtp.cooldown.ignore");
 				//Check cooldown
-				if ( isOnCooldown( uuid ) ) {
-					
-					DecimalFormat df = new DecimalFormat("#.##");
-					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldownTimeLeft(uuid) / 1000D ) + " seconds.");
-					
-				} else {
+				if ( !isOnCooldown( uuid ) || ignoreCooldown ) {
 					
 					//Get Economy and config
 					Economy econ = Main.getEconomy();
 					double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
+					
+					if ( player.hasPermission("xrandomtp.cost.ignore") ) {
+						cost = 0;
+					}
+					
 					//Withdraw money
 					EconomyResponse r = econ.withdrawPlayer(player, cost);
 					
@@ -76,8 +76,10 @@ public class RandomTP implements CommandExecutor {
 						if ( randomTeleport( player ) ) {
 							
 							//Set cooldown
-							setCooldown(uuid);
-							player.sendMessage(Main.infoPrefix + "You have been teleported randomly! This cost you: " + econ.format(cost) + "!");
+							if ( !ignoreCooldown ) {
+								setCooldown(uuid);
+							}
+							player.sendMessage(Main.infoPrefix + "You have been teleported randomly! " + econ.format(cost) + " have been deducted from your account!");
 							
 						} else {
 							
@@ -93,6 +95,11 @@ public class RandomTP implements CommandExecutor {
 						sender.sendMessage(Main.errorPrefix + "You don't have enough money! You are missing: " + econ.format(missingMoney) + "!");
 						
 					}
+					
+				} else {
+					
+					DecimalFormat df = new DecimalFormat("#.##");
+					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldownTimeLeft(uuid) / 1000D ) + " seconds.");
 					
 				}
 				
@@ -120,6 +127,8 @@ public class RandomTP implements CommandExecutor {
 		FileConfiguration config = Main.getPlugin().getConfig();
 		int maxRadius = config.getInt( "border.maxRadius" );
 		int minRadius = config.getInt( "border.minRadius" );
+		int offsetx = config.getInt("border.offsetx");
+		int offsetz = config.getInt("border.offsetz");
 		int tries = config.getInt("teleport.maxTries");
 		
 		//Checking config
@@ -160,8 +169,8 @@ public class RandomTP implements CommandExecutor {
 			double angle = Math.random() * 2 * Math.PI;
 			
 			//Calculating cartesian coordinates
-			int xCoordinate = (int) ( Math.cos( angle ) * distance );
-			int zCoordinate = (int) ( Math.sin( angle ) * distance );
+			int xCoordinate = (int) ( Math.cos( angle ) * distance ) + offsetx;
+			int zCoordinate = (int) ( Math.sin( angle ) * distance ) + offsetz;
 			
 			//Getting the y-Coordinate
 			int yCoordinate = player.getWorld().getHighestBlockYAt( xCoordinate, zCoordinate );

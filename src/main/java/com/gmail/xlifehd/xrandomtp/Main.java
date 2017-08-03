@@ -29,13 +29,12 @@ public class Main extends JavaPlugin {
 		
 		config.options().header("xRandomTP Config by xLifeHD@gmail.com");
 		config.addDefault("CfgVersion", 1);
-		//TODO add Border offset
 		//TODO Add option to use radius around player instead of border
-		//TODO Add permission to ignore cooldown
-		//TODO Add permission to ignore economy
 		//TODO Per world configuration
 		config.addDefault("border.maxRadius", 5000);
 		config.addDefault("border.minRadius", 200);
+		config.addDefault("border.offsetx", 0);
+		config.addDefault("border.offsetz", 0);
 		config.addDefault("teleport.maxTries", 10);
 		config.addDefault("teleport.cooldown", 30);
 		config.addDefault("teleport.cost", 250.0);
