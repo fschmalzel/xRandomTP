@@ -31,41 +31,70 @@ public class RandomTP implements CommandExecutor {
 			if ( args.length >= 1 ) {
 				//Print help
 				if ( args[0].equalsIgnoreCase( "help" ) ) {
+					
 					player.chat( "/help rtp" );
+					
+				} else if ( args[0].equalsIgnoreCase( "reset" ) ) {
+					
+					if ( player.hasPermission( "xrandomtp.cooldown.reset" ) ) {
+						
+						UUID uuid = player.getUniqueId();
+						resetCooldown(uuid);
+						
+					} else {
+						
+						sender.sendMessage(Main.errorPrefix + "You are lacking the permission \"xrandomtp.cooldown.reset\"!");
+						
+					}
+					
 				}
 				
 			} else {
-				//Check cooldown
-				long cooldown = isOnCooldown( player.getUniqueId() );
 				
-				if ( cooldown <= 0 ) {
-					double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
-					if ( cost > 0 ) {
-						//Withdraw money and teleport if transaction succeeded 
-						Economy econ = Main.getEconomy();
-						EconomyResponse r = econ.withdrawPlayer(player, cost);
-						
-						if ( r.transactionSuccess() ) {
-							//Check if teleport succeeded
-							if ( randomTeleport( player ) ) {
-								//If not return money
-								
-								player.sendMessage(Main.infoPrefix + "You have been teleported randomly! This cost you: " + econ.format(cost) + "!");
-							} else {
-								player.sendMessage(Main.infoPrefix + "Couldn't find a safe spot! Please try again!");
-								econ.depositPlayer(player, cost);
-							}
-						} else {
-							sender.sendMessage(Main.errorPrefix + "You don't have enough money!");
-						}
-					} else {
-						randomTeleport( player );
-					}
-				} else {
-					//Inform player about cooldown
+				//Get UUID
+				UUID uuid = player.getUniqueId();
+				
+				//Check cooldown
+				if ( isOnCooldown( uuid ) ) {
+					
 					DecimalFormat df = new DecimalFormat("#.##");
-					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldown / 1000D ) + " seconds.");
+					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldownTimeLeft(uuid) / 1000D ) + " seconds.");
+					
+				} else {
+					
+					//Get Economy and config
+					Economy econ = Main.getEconomy();
+					double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
+					//Withdraw money
+					EconomyResponse r = econ.withdrawPlayer(player, cost);
+					
+					//Check if transaction was successful
+					if ( r.transactionSuccess() ) {
+						
+						//Check if teleport was successful
+						if ( randomTeleport( player ) ) {
+							
+							//Set cooldown
+							setCooldown(uuid);
+							player.sendMessage(Main.infoPrefix + "You have been teleported randomly! This cost you: " + econ.format(cost) + "!");
+							
+						} else {
+							
+							//If not return the money
+							player.sendMessage(Main.errorPrefix + "Couldn't find a safe spot! Please try again!");
+							econ.depositPlayer(player, cost);
+							
+						}
+						
+					} else {
+						
+						double missingMoney = cost - econ.getBalance( player );
+						sender.sendMessage(Main.errorPrefix + "You don't have enough money! You are missing: " + econ.format(missingMoney) + "!");
+						
+					}
+					
 				}
+				
 				
 			}
 			
@@ -213,40 +242,60 @@ public class RandomTP implements CommandExecutor {
 	
 	private HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
 	
-	private long isOnCooldown( UUID uuid ) {
+	private boolean isOnCooldown( UUID uuid ) {
 		
 		//Initialize variables
 		FileConfiguration config = Main.getPlugin().getConfig();
 		long cooldown = config.getInt( "teleport.cooldown" ) * 1000;	
 		long currentTime = System.currentTimeMillis();
 		Long timestamp = cooldowns.get( uuid );
-
 		
 		if ( timestamp != null ) {
 			
 			//Check if cooldown is already over
 			if ( (currentTime - timestamp) > cooldown ) {
-				//Command ready, return 0 and reset
-				cooldowns.replace(uuid, currentTime);
-				return 0;
-				
-			} else {
-				//On cooldown, return the time that is left
-				long timeLeft = cooldown - (currentTime - timestamp);
-				return timeLeft;
-				
+				return true;
 			}
 			
-			
 		} else {
-			//No cooldown registered, return 0 and put it on cooldown
-			cooldowns.put(uuid, currentTime);
-			return 0;
+			return true;
 		}
 		
-		
+		return false;
 	}
 	
+	private long cooldownTimeLeft( UUID uuid ) {
+		FileConfiguration config = Main.getPlugin().getConfig();
+		long cooldown = config.getInt( "teleport.cooldown" ) * 1000;	
+		long currentTime = System.currentTimeMillis();
+		Long timestamp = cooldowns.get( uuid );
+		
+		if ( timestamp != null ) {
+			long timeLeft = cooldown - (currentTime - timestamp);
+			if ( timeLeft > 0 ) {
+				return timeLeft;
+			} else {
+				return 0;
+			}
+		} else {
+			return 0;
+		}
+	}
+	
+	private void setCooldown( UUID uuid ) {
+		long currentTime = System.currentTimeMillis();
+		if ( cooldowns.containsKey(uuid) ) {
+			cooldowns.replace(uuid, currentTime);
+		} else {
+			cooldowns.put(uuid, currentTime);
+		}
+	}
+	
+	private void resetCooldown( UUID uuid ) {
+		if ( cooldowns.containsKey(uuid) ) {
+			cooldowns.remove( uuid );
+		}
+	}
 	
 }
 
