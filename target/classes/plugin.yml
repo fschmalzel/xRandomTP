@@ -1,0 +1,7 @@
+name: xRandomTP
+main: com.gmail.xlifehd.xrandomtp.Main
+version: 1.0.3
+commands:
+  rtp:
+    description: Random teleport
+    usage: /rtp
