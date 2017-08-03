@@ -1,5 +1,8 @@
 package com.gmail.xlifehd.xrandomtp.commands;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,8 +31,15 @@ public class RandomTP implements CommandExecutor {
 				}
 				
 			} else {
-				//Teleport
-				randomTeleport( player );
+				//Check cooldown
+				long cooldown = isOnCooldown( player.getUniqueId() );
+				
+				if ( cooldown <= 0 ) {
+					randomTeleport( player );
+				} else {
+					//Inform player about cooldown
+					sender.sendMessage(Main.errorPrefix + "\"/rtp\" is still on cooldown wait " + (int) cooldown/1000 + " seconds!");
+				}
 				
 			}
 			
@@ -82,7 +92,7 @@ public class RandomTP implements CommandExecutor {
 			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Max. tries are 50! ERROR#104" );
 		}
 		
-		//Initilizing variables
+		//Initializing variables
 		Location randomLoc = player.getLocation();
 		boolean safe = false;
 		
@@ -140,7 +150,6 @@ public class RandomTP implements CommandExecutor {
 			case MAGMA:
 			case CACTUS:
 				return false;
-				
 			default:
 				break;
 			}
@@ -165,7 +174,7 @@ public class RandomTP implements CommandExecutor {
 			default:
 				
 				//Throw Error
-				Main.getPlugin().getLogger().warning( Main.errorPrefix + "Something went wrong! ERROR#0" );
+				Main.getPlugin().getLogger().warning( Main.errorPrefix + "Something went wrong! ERROR#000" );
 				return false;
 				
 			}
@@ -175,6 +184,43 @@ public class RandomTP implements CommandExecutor {
 		return true;
 		
 	}
+	
+	private HashMap<UUID, Long> cooldowns = new HashMap<UUID, Long>();
+	
+	private long isOnCooldown( UUID uuid ) {
+		
+		//Initialize variables
+		FileConfiguration config = Main.getPlugin().getConfig();
+		long cooldown = config.getLong( "teleport.cooldown" );	
+		long currentTime = System.currentTimeMillis();
+		Long timestamp = cooldowns.get( uuid );
+
+		
+		if ( timestamp != null ) {
+			
+			//Check if cooldown is already over
+			if ( (currentTime - timestamp) > cooldown ) {
+				//Command ready, return 0 and reset
+				cooldowns.replace(uuid, currentTime);
+				return 0;
+				
+			} else {
+				//On cooldown, return the time that is left
+				long timeLeft = cooldown - (currentTime - timestamp);
+				return timeLeft;
+				
+			}
+			
+			
+		} else {
+			//No cooldown registered, return 0 and put it on cooldown
+			cooldowns.put(uuid, currentTime);
+			return 0;
+		}
+		
+		
+	}
+	
 	
 }
 
