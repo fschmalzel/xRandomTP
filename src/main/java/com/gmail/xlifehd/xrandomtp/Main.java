@@ -31,7 +31,7 @@ public class Main extends JavaPlugin {
 		config.addDefault("border.maxRadius", 5000);
 		config.addDefault("border.minRadius", 200);
 		config.addDefault("teleport.maxTries", 10);
-		config.addDefault("teleport.cooldown", 60000);
+		config.addDefault("teleport.cooldown", 60);
 		config.options().copyHeader(true);
 		config.options().copyDefaults(true);
 		saveConfig();

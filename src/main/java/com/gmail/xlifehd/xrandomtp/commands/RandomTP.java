@@ -40,7 +40,7 @@ public class RandomTP implements CommandExecutor {
 				} else {
 					//Inform player about cooldown
 					DecimalFormat df = new DecimalFormat("#.##");
-					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format(cooldown/1000) + " seconds.");
+					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldown / 1000D ) + " seconds.");
 				}
 				
 			}
@@ -193,7 +193,7 @@ public class RandomTP implements CommandExecutor {
 		
 		//Initialize variables
 		FileConfiguration config = Main.getPlugin().getConfig();
-		long cooldown = config.getLong( "teleport.cooldown" );	
+		long cooldown = config.getInt( "teleport.cooldown" ) * 1000;	
 		long currentTime = System.currentTimeMillis();
 		Long timestamp = cooldowns.get( uuid );
 
