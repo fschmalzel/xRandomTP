@@ -1,5 +1,6 @@
 package com.gmail.xlifehd.xrandomtp.commands;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -38,7 +39,8 @@ public class RandomTP implements CommandExecutor {
 					randomTeleport( player );
 				} else {
 					//Inform player about cooldown
-					sender.sendMessage(Main.errorPrefix + "\"/rtp\" is still on cooldown wait " + (int) cooldown/1000 + " seconds!");
+					DecimalFormat df = new DecimalFormat("#.##");
+					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format(cooldown/1000) + " seconds.");
 				}
 				
 			}
