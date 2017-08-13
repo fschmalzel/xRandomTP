@@ -171,7 +171,35 @@ public class RandomTP implements CommandExecutor {
 			Main.toConsole(2, "Max. tries are 50! ERROR#104" );
 		}
 		
-		//Try getting a safe location 5 times, if it fails print a message
+		int minHeight = 0;
+		int maxHeight = 0;
+		
+		if (nether) {
+			minHeight = config.getInt("teleport.nether.minHeight");
+			maxHeight = config.getInt("teleport.nether.maxHeight");
+			if (maxHeight < 0) {
+				maxHeight = 0;
+				Main.toConsole(2, "Max. height too small! ERROR#105");
+			}
+			if (minHeight < 0) {
+				minHeight = 0;
+				Main.toConsole(2, "Min. height too small! ERROR#106");
+			}
+			if (maxHeight > 256) {
+				maxHeight = 256;
+				Main.toConsole(2, "Max. height too big! ERROR#107");
+			}
+			if (minHeight > 255) {
+				minHeight = 255;
+				Main.toConsole(2, "Min. height too big! ERROR#108");
+			}
+			if (minHeight >= maxHeight) {
+				maxHeight = minHeight + 1;
+				Main.toConsole(2, "Max. height has to be bigger than min. height! ERROR#109");
+			} 
+		}
+		
+		//Try getting a safe location X times, if it fails print a message
 		for ( int i = 0; i < tries && !safe; i++ ) {
 			
 			//Getting random polar coordinates
@@ -188,35 +216,9 @@ public class RandomTP implements CommandExecutor {
 			
 			//Getting the y-Coordinate
 			if ( nether ) {
-				int minHeight = config.getInt("teleport.nether.minHeight");
-				int maxHeight = config.getInt("teleport.nether.maxHeight");
-				
-				if ( maxHeight < 0 ) {
-					maxHeight = 0;
-					Main.toConsole(2, "Max. height too small! ERROR#105" );
-				}
-				
-				if ( minHeight < 0 ) {
-					minHeight = 0;
-					Main.toConsole(2, "Min. height too small! ERROR#106" );
-				}
-				
-				if ( maxHeight > 256 ) {
-					maxHeight = 256;
-					Main.toConsole(2, "Max. height too big! ERROR#107" );
-				}
-				
-				if (minHeight > 255) {
-					minHeight = 255;
-					Main.toConsole(2, "Min. height too big! ERROR#108" );
-				}
-				
-				if ( minHeight >= maxHeight ) {
-					maxHeight = minHeight + 1;
-					Main.toConsole(2, "Max. height has to be bigger than min. height! ERROR#109" );
-				}
 				
 				yCoordinate = (int) (minHeight + ( Math.random() * (maxHeight - minHeight + 1) ));
+				int startYCoordinate = yCoordinate;
 				boolean finished = false;
 				
 				do {
@@ -224,7 +226,7 @@ public class RandomTP implements CommandExecutor {
 					randomLoc.setY(yCoordinate);
 					
 					if ( randomLoc.getBlock().getType() == Material.AIR) {
-
+						
 						safe = isSafe( randomLoc, (short) 3 );
 						
 						if ( safe ) {
@@ -243,7 +245,46 @@ public class RandomTP implements CommandExecutor {
 						
 					}
 					
-				} while (yCoordinate > minHeight && yCoordinate < maxHeight && !finished);
+				} while (yCoordinate < maxHeight && !finished);
+				
+				if ( !finished ) {
+					yCoordinate = startYCoordinate;
+					do {
+						
+						randomLoc.setY(yCoordinate);
+						
+						if ( randomLoc.getBlock().getType() == Material.AIR) {
+							
+							randomLoc.setY(yCoordinate-1);
+							
+							if (randomLoc.getBlock().getType().isSolid()) {
+								
+								randomLoc.setY(yCoordinate);
+								
+								safe = isSafe(randomLoc, (short) 3);
+								if (safe) {
+									
+									yCoordinate -= 1;
+									finished = true;
+
+								} else {
+
+									yCoordinate -= 1;
+
+								} 
+							} else {
+								yCoordinate -= 1;
+							}
+							
+						} else {
+							
+							yCoordinate -= 1;
+							
+						}
+						
+					} while (yCoordinate > minHeight && !finished);
+				}
+				
 				
 			} else {
 				
