@@ -228,7 +228,13 @@ public class RandomTP implements CommandExecutor {
 						safe = isSafe( randomLoc, (short) 3 );
 						
 						if ( safe ) {
+							
 							finished = true;
+							
+						} else {
+							
+							yCoordinate += 1;
+							
 						}
 						
 					} else {

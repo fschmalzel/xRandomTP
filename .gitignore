@@ -13,3 +13,5 @@ buildNumber.properties
 target/classes/plugin.yml
 target/maven-archiver/pom.properties
 target/classes/plugin.yml
+target/maven-archiver/pom.properties
+target/classes/plugin.yml
