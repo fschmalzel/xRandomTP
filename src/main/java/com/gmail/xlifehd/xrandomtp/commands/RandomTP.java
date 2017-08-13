@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,82 +29,88 @@ public class RandomTP implements CommandExecutor {
 			
 			Player player = (Player) sender;
 			
-			if ( args.length >= 1 ) {
-				//Print help
-				if ( args[0].equalsIgnoreCase( "help" ) ) {
-					
-					player.chat( "/help rtp" );
-					
-				} else if ( args[0].equalsIgnoreCase( "reset" ) ) {
-					
-					if ( player.hasPermission( "xrandomtp.cooldown.reset" ) ) {
+			
+			if (Main.getPlugin().getConfig().getBoolean("worlds." + player.getWorld().getName() + ".enabled")) {
+				if ( args.length >= 1 ) {
+					//Print help
+					if ( args[0].equalsIgnoreCase( "help" ) ) {
 						
-						UUID uuid = player.getUniqueId();
-						resetCooldown(uuid);
-						player.sendMessage(Main.infoPrefix + "Your cooldown has been reset!");
+						Bukkit.dispatchCommand(player, "help " + label);
 						
-					} else {
+					} else if ( args[0].equalsIgnoreCase( "reset" ) ) {
 						
-						sender.sendMessage(Main.errorPrefix + "You are lacking the permission \"xrandomtp.cooldown.reset\"!");
-						
-					}
-					
-				}
-				
-			} else {
-				
-				//Get UUID
-				UUID uuid = player.getUniqueId();
-				boolean ignoreCooldown = player.hasPermission("xrandomtp.cooldown.ignore");
-				//Check cooldown
-				if ( !isOnCooldown( uuid ) || ignoreCooldown ) {
-					
-					//Get Economy and config
-					Economy econ = Main.getEconomy();
-					double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
-					
-					if ( player.hasPermission("xrandomtp.cost.ignore") ) {
-						cost = 0;
-					}
-					
-					//Withdraw money
-					EconomyResponse r = econ.withdrawPlayer(player, cost);
-					
-					//Check if transaction was successful
-					if ( r.transactionSuccess() ) {
-						
-						//Check if teleport was successful
-						if ( randomTeleport( player ) ) {
+						if ( player.hasPermission( "xrandomtp.cooldown.reset" ) ) {
 							
-							//Set cooldown
-							if ( !ignoreCooldown ) {
-								setCooldown(uuid);
-							}
-							player.sendMessage(Main.infoPrefix + "You have been teleported randomly! " + econ.format(cost) + " have been deducted from your account!");
+							UUID uuid = player.getUniqueId();
+							resetCooldown(uuid);
+							player.sendMessage(Main.infoPrefix + "Your cooldown has been reset!");
 							
 						} else {
 							
-							//If not return the money
-							player.sendMessage(Main.errorPrefix + "Couldn't find a safe spot! Please try again!");
-							econ.depositPlayer(player, cost);
+							sender.sendMessage(Main.errorPrefix + "You are lacking the permission \"xrandomtp.cooldown.reset\"!");
 							
 						}
-						
-					} else {
-						
-						double missingMoney = cost - econ.getBalance( player );
-						sender.sendMessage(Main.errorPrefix + "You don't have enough money! You are missing: " + econ.format(missingMoney) + "!");
 						
 					}
 					
 				} else {
 					
-					DecimalFormat df = new DecimalFormat("#.##");
-					sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldownTimeLeft(uuid) / 1000D ) + " seconds.");
+					//Get UUID
+					UUID uuid = player.getUniqueId();
+					boolean ignoreCooldown = player.hasPermission("xrandomtp.cooldown.ignore");
+					//Check cooldown
+					if ( !isOnCooldown( uuid ) || ignoreCooldown ) {
+						
+						//Get Economy and config
+						Economy econ = Main.getEconomy();
+						double cost = Main.getPlugin().getConfig().getDouble("teleport.cost");
+						
+						if ( player.hasPermission("xrandomtp.cost.ignore") ) {
+							cost = 0;
+						}
+						
+						//Withdraw money
+						EconomyResponse r = econ.withdrawPlayer(player, cost);
+						
+						//Check if transaction was successful
+						if ( r.transactionSuccess() ) {
+							
+							//Check if teleport was successful
+							if ( randomTeleport( player ) ) {
+								
+								//Set cooldown
+								if ( !ignoreCooldown ) {
+									setCooldown(uuid);
+								}
+								player.sendMessage(Main.infoPrefix + "You have been teleported randomly! " + econ.format(cost) + " have been deducted from your account!");
+								
+							} else {
+								
+								//If not return the money
+								player.sendMessage(Main.errorPrefix + "Couldn't find a safe spot! Please try again!");
+								econ.depositPlayer(player, cost);
+								
+							}
+							
+						} else {
+							
+							double missingMoney = cost - econ.getBalance( player );
+							sender.sendMessage(Main.errorPrefix + "You don't have enough money! You are missing: " + econ.format(missingMoney) + "!");
+							
+						}
+						
+					} else {
+						
+						DecimalFormat df = new DecimalFormat("#.##");
+						sender.sendMessage(Main.errorPrefix + "The command \"/" + label + "\" is still on cooldown! Wait " + df.format( cooldownTimeLeft(uuid) / 1000D ) + " seconds.");
+						
+					}
+					
 					
 				}
 				
-				
+			} else {
+				player.sendMessage(Main.infoPrefix + "\"/rtp\" is disabled in this world.");
 			}
 			
 			return true;
@@ -123,43 +130,46 @@ public class RandomTP implements CommandExecutor {
 	}
 	
 	private boolean randomTeleport ( Player player ) {
-		//Loading the config
+		
+		//Initializing variables
+		Location randomLoc = player.getLocation();
+		boolean safe = false;
+		
+		//Loading the configuration
 		FileConfiguration config = Main.getPlugin().getConfig();
 		int maxRadius = config.getInt( "border.maxRadius" );
 		int minRadius = config.getInt( "border.minRadius" );
 		int offsetx = config.getInt("border.offsetx");
 		int offsetz = config.getInt("border.offsetz");
 		int tries = config.getInt("teleport.maxTries");
+		boolean nether = config.getBoolean("worlds." + randomLoc.getWorld().getName() + ".nether");
 		
-		//Checking config
+		//Checking configuration
 		if ( maxRadius < 0 ) {
 			maxRadius = 0;
-			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Max. radius too small! ERROR#100" );
+			Main.toConsole(2, "Max. radius too small! ERROR#100" );
+			
 		}
 		
 		if ( minRadius < 0 ) {
 			minRadius = 0;
-			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Min. radius too small! ERROR#101" );
+			Main.toConsole(2, "Min. radius too small! ERROR#101" );
 		}
 		
 		if ( minRadius >= maxRadius ) {
 			maxRadius = minRadius + 1;
-			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Max. radius has to be bigger than min. radius! ERROR#102" );
+			Main.toConsole(2, "Max. radius has to be bigger than min. radius! ERROR#102" );
 		}
 		
 		if ( tries < 5 ) {
 			tries = 5;
-			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Min. tries are 5! ERROR#103" );
+			Main.toConsole(2, "Min. tries are 5! ERROR#103" );
 		}
 		
 		if ( tries > 50 ) {
 			tries = 50;
-			Main.getPlugin().getLogger().warning( Main.errorPrefix + "Max. tries are 50! ERROR#104" );
+			Main.toConsole(2, "Max. tries are 50! ERROR#104" );
 		}
-		
-		//Initializing variables
-		Location randomLoc = player.getLocation();
-		boolean safe = false;
 		
 		//Try getting a safe location 5 times, if it fails print a message
 		for ( int i = 0; i < tries && !safe; i++ ) {
@@ -171,15 +181,62 @@ public class RandomTP implements CommandExecutor {
 			//Calculating cartesian coordinates
 			int xCoordinate = (int) ( Math.cos( angle ) * distance ) + offsetx;
 			int zCoordinate = (int) ( Math.sin( angle ) * distance ) + offsetz;
+			int yCoordinate;
+			
+			randomLoc.setX(xCoordinate + 0.5);
+			randomLoc.setZ(zCoordinate + 0.5);
 			
 			//Getting the y-Coordinate
-			int yCoordinate = player.getWorld().getHighestBlockYAt( xCoordinate, zCoordinate );
-			
-			//Creating new Location
-			randomLoc = new Location( player.getWorld(), xCoordinate + 0.5, yCoordinate, zCoordinate + 0.5 );
-			
-			//Checking if it's safe
-			safe = isSafe( randomLoc );
+			if ( nether ) {
+				int minHeight = config.getInt("teleport.nether.minHeight");
+				int maxHeight = config.getInt("teleport.nether.maxHeight");
+				
+				if ( maxHeight < 0 ) {
+					maxHeight = 0;
+					Main.toConsole(2, "Max. height too small! ERROR#105" );
+				}
+				
+				if ( minHeight < 0 ) {
+					minHeight = 0;
+					Main.toConsole(2, "Min. height too small! ERROR#106" );
+				}
+				
+				if ( maxHeight > 256 ) {
+					maxHeight = 256;
+					Main.toConsole(2, "Max. height too big! ERROR#107" );
+				}
+				
+				if (minHeight > 255) {
+					minHeight = 255;
+					Main.toConsole(2, "Min. height too big! ERROR#108" );
+				}
+				
+				if ( minHeight >= maxHeight ) {
+					maxHeight = minHeight + 1;
+					Main.toConsole(2, "Max. height has to be bigger than min. height! ERROR#109" );
+				}
+				
+				yCoordinate = (int) (minHeight + ( Math.random() * (maxHeight - minHeight + 1) ));
+				boolean finished = false;
+				do {
+					randomLoc.setY(yCoordinate);
+					if ( randomLoc.getBlock().getType() == Material.AIR ) {
+						finished = true;
+					} else {
+						yCoordinate += 1;
+					}
+				} while (yCoordinate > minHeight && yCoordinate < maxHeight && !finished);
+				
+				safe = isSafe( randomLoc, (short) 3 );
+				
+			} else {
+				
+				yCoordinate = player.getWorld().getHighestBlockYAt( xCoordinate, zCoordinate );
+				randomLoc.setY(yCoordinate);
+				
+				safe = isSafe( randomLoc, (short) 2 );
+				
+			}
 		}
 		
 		if ( safe ) {
@@ -191,16 +248,17 @@ public class RandomTP implements CommandExecutor {
 		} else {
 			
 			return false;
+			
 		}
 	}
 	
-	private boolean isSafe( Location loc ) {
+	private boolean isSafe( Location loc, short height ) {
 		
 		int xCoordinate = loc.getBlockX();
 		int zCoordinate = loc.getBlockZ();
 		int yCoordinate = loc.getWorld().getHighestBlockYAt( xCoordinate, zCoordinate );
 		
-		for ( short i = -1; i <= 0; i++ ) {
+		for ( short i = -1; i <= (height-2); i++ ) {
 			
 			Block block = loc.getWorld().getBlockAt( xCoordinate, yCoordinate + i, zCoordinate );
 			Material material = block.getType();
@@ -239,7 +297,7 @@ public class RandomTP implements CommandExecutor {
 			default:
 				
 				//Throw Error
-				Main.getPlugin().getLogger().warning( Main.errorPrefix + "Something went wrong! ERROR#000" );
+				Main.toConsole(2, "Something went wrong! ERROR#000" );
 				return false;
 				
 			}

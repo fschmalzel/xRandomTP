@@ -1,6 +1,10 @@
 package com.gmail.xlifehd.xrandomtp;
 
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,13 +28,33 @@ public class Main extends JavaPlugin {
 		
 		instance = this;
 		
-		//Configuration
+		setupConfig();
+		
+		//Command register
+		this.getCommand("rtp").setExecutor(new RandomTP());
+		
+		if (!setupEconomy() ) {
+			toConsole(3, "Disabled due to no Vault dependency found!");
+			getServer().getPluginManager().disablePlugin(this);
+			return;
+		}
+		
+	}
+	
+	@Override
+	public void onDisable() {
+		
+	}
+	
+	private void setupConfig() {
+		
 		FileConfiguration config = this.getConfig();
 		
 		config.options().header("xRandomTP Config by xLifeHD@gmail.com");
 		config.addDefault("CfgVersion", 1);
 		//TODO Add option to use radius around player instead of border
-		//TODO Per world configuration
+		
+		config.addDefault("border.perWorldBorder", false);
 		config.addDefault("border.maxRadius", 5000);
 		config.addDefault("border.minRadius", 200);
 		config.addDefault("border.offsetx", 0);
@@ -38,21 +62,22 @@ public class Main extends JavaPlugin {
 		config.addDefault("teleport.maxTries", 10);
 		config.addDefault("teleport.cooldown", 30);
 		config.addDefault("teleport.cost", 250.0);
+		config.addDefault("teleport.nether.minHeight", 20);
+		config.addDefault("teleport.nether.maxHeight", 115);
+		
+		List<World> worlds = Bukkit.getWorlds();
+		for ( World world : worlds ) {
+			config.addDefault("worlds." + world.getName() + ".enabled", true);
+			config.addDefault("worlds." + world.getName() + ".nether", false);
+			config.addDefault("worlds." + world.getName() + ".border.maxRadius", 5000);
+			config.addDefault("worlds." + world.getName() + ".border.minRadius", 200);
+			config.addDefault("worlds." + world.getName() + ".border.offsetx", 0);
+			config.addDefault("worlds." + world.getName() + ".border.offsetz", 0);
+		}
+		
 		config.options().copyHeader(true);
 		config.options().copyDefaults(true);
 		saveConfig();
-		
-		//Command register
-		this.getCommand("rtp").setExecutor(new RandomTP());
-        if (!setupEconomy() ) {
-            getLogger().severe(errorPrefix + "Disabled due to no Vault dependency found!");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-	}
-	
-	@Override
-	public void onDisable() {
 		
 	}
 	
@@ -76,4 +101,22 @@ public class Main extends JavaPlugin {
 	public static Economy getEconomy() {
 		return econ;
 	}
+	
+	public static void toConsole(int type, String msg) {
+		switch ( type ) {
+		case 1:
+			Main.getPlugin().getLogger().info(infoPrefix + msg);
+			break;
+		case 2:
+			Main.getPlugin().getLogger().warning(errorPrefix + msg);
+			break;
+		case 3:
+			Main.getPlugin().getLogger().severe(errorPrefix + msg);
+			break;
+		default:
+			Main.getPlugin().getLogger().info(infoPrefix + msg);
+			break;
+		}
+	}
+	
 }
