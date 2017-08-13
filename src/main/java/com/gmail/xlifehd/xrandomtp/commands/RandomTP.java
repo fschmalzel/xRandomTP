@@ -218,16 +218,26 @@ public class RandomTP implements CommandExecutor {
 				
 				yCoordinate = (int) (minHeight + ( Math.random() * (maxHeight - minHeight + 1) ));
 				boolean finished = false;
-				do {
-					randomLoc.setY(yCoordinate);
-					if ( randomLoc.getBlock().getType() == Material.AIR ) {
-						finished = true;
-					} else {
-						yCoordinate += 1;
-					}
-				} while (yCoordinate > minHeight && yCoordinate < maxHeight && !finished);
 				
-				safe = isSafe( randomLoc, (short) 3 );
+				do {
+					
+					randomLoc.setY(yCoordinate);
+					
+					if ( randomLoc.getBlock().getType() == Material.AIR) {
+
+						safe = isSafe( randomLoc, (short) 3 );
+						
+						if ( safe ) {
+							finished = true;
+						}
+						
+					} else {
+						
+						yCoordinate += 1;
+						
+					}
+					
+				} while (yCoordinate > minHeight && yCoordinate < maxHeight && !finished);
 				
 			} else {
 				
@@ -289,7 +299,15 @@ public class RandomTP implements CommandExecutor {
 			case 0:
 				
 				//Check if block is not liquid / solid
-				if ( !( !block.isLiquid() && !material.isSolid() ) ) {
+				if ( block.isLiquid() || material.isSolid() ) {
+					return false;
+				}
+				break;
+				
+			case 1:
+				
+				//Check if block is not liquid / solid
+				if ( block.isLiquid() || material.isSolid() ) {
 					return false;
 				}
 				break;
@@ -366,25 +384,3 @@ public class RandomTP implements CommandExecutor {
 	}
 	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
