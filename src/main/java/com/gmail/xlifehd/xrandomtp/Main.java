@@ -69,7 +69,13 @@ public class Main extends JavaPlugin {
 		List<World> worlds = Bukkit.getWorlds();
 		for ( World world : worlds ) {
 			String worldName = world.getName();
-			config.addDefault("worlds." + worldName + ".enabled", true);
+			
+			if ( worldName.equalsIgnoreCase( "world_the_end" ) ) {
+				config.addDefault("worlds." + worldName + ".enabled", false);
+			} else {
+				config.addDefault("worlds." + worldName + ".enabled", true);
+			}
+			
 			if ( worldName.equalsIgnoreCase( "world_nether" ) ) {
 				config.addDefault("worlds.world_nether.nether", true);
 			} else {
