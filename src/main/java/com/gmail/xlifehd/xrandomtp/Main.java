@@ -33,9 +33,6 @@ public class Main extends JavaPlugin {
 		//Command register
 		this.getCommand("rtp").setExecutor(new RandomTP());
 		
-		//Debug
-		toConsole(2, "test");
-		
 		if (!setupEconomy() ) {
 			toConsole(3, "Disabled due to no Vault dependency found!");
 			getServer().getPluginManager().disablePlugin(this);
