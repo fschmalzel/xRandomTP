@@ -59,7 +59,7 @@ public class Main extends JavaPlugin {
 		config.addDefault("border.minRadius", 200);
 		config.addDefault("border.offsetx", 0);
 		config.addDefault("border.offsetz", 0);
-		config.addDefault("border.useBorderasRadiusAroundPlayer", false);
+		config.addDefault("border.useBorderAsRadiusAroundPlayer", false);
 		config.addDefault("teleport.maxTries", 10);
 		config.addDefault("teleport.cooldown", 30);
 		config.addDefault("teleport.cost", 250.0);
@@ -70,7 +70,12 @@ public class Main extends JavaPlugin {
 		for ( World world : worlds ) {
 			String worldName = world.getName();
 			config.addDefault("worlds." + worldName + ".enabled", true);
-			config.addDefault("worlds." + worldName + ".nether", false);
+			if ( worldName.equalsIgnoreCase( "world_nether" ) ) {
+				config.addDefault("worlds.world_nether.nether", true);
+			} else {
+				config.addDefault("worlds." + worldName + ".nether", false);
+			}
+			
 			config.addDefault("worlds." + worldName + ".border.maxRadius", 5000);
 			config.addDefault("worlds." + worldName + ".border.minRadius", 200);
 			config.addDefault("worlds." + worldName + ".border.offsetx", 0);
