@@ -53,15 +53,16 @@ public class Main extends JavaPlugin {
 		
 		FileConfiguration config = this.getConfig();
 		
-		config.options().header("xRandomTP Config by xLifeHD@gmail.com");
+		config.options().header("xRandomTP Config. Please post feedback and bug reports on the spigot resource page!\n" + 
+		"\"useBorderasRadiusAroundPlayer\" disables the border and lets players teleport around them using the two radii of the border!");
 		config.addDefault("CfgVersion", 1);
-		//TODO Add option to use radius around player instead of border
 		
-		config.addDefault("border.perWorldBorder", false);
+		config.addDefault("border.perWorldSetting", false);
 		config.addDefault("border.maxRadius", 5000);
 		config.addDefault("border.minRadius", 200);
 		config.addDefault("border.offsetx", 0);
 		config.addDefault("border.offsetz", 0);
+		config.addDefault("border.useBorderasRadiusAroundPlayer", 5000);
 		config.addDefault("teleport.maxTries", 10);
 		config.addDefault("teleport.cooldown", 30);
 		config.addDefault("teleport.cost", 250.0);
@@ -70,12 +71,14 @@ public class Main extends JavaPlugin {
 		
 		List<World> worlds = Bukkit.getWorlds();
 		for ( World world : worlds ) {
-			config.addDefault("worlds." + world.getName() + ".enabled", true);
-			config.addDefault("worlds." + world.getName() + ".nether", false);
-			config.addDefault("worlds." + world.getName() + ".border.maxRadius", 5000);
-			config.addDefault("worlds." + world.getName() + ".border.minRadius", 200);
-			config.addDefault("worlds." + world.getName() + ".border.offsetx", 0);
-			config.addDefault("worlds." + world.getName() + ".border.offsetz", 0);
+			String worldName = world.getName();
+			config.addDefault("worlds." + worldName + ".enabled", true);
+			config.addDefault("worlds." + worldName + ".nether", false);
+			config.addDefault("worlds." + worldName + ".border.maxRadius", 5000);
+			config.addDefault("worlds." + worldName + ".border.minRadius", 200);
+			config.addDefault("worlds." + worldName + ".border.offsetx", 0);
+			config.addDefault("worlds." + worldName + ".border.offsetz", 0);
+			config.addDefault("worlds." + worldName + ".border.useBorderAsRadiusAroundPlayer", false);
 		}
 		
 		config.options().copyHeader(true);

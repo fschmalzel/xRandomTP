@@ -11,6 +11,7 @@ public class ConfigLoader {
 	private int minHeight;
 	private int maxHeight;
 	private boolean nether;
+	private boolean borderAsRadius;
 	
 	public ConfigLoader(String worldName) {
 		
@@ -21,12 +22,13 @@ public class ConfigLoader {
 		maxHeight = config.getInt( "teleport.nether.maxHeight" );
 		nether = config.getBoolean( "worlds." + worldName + ".nether" );
 		
-		if ( config.getBoolean("border.perWorldBorder") ) {
+		if ( config.getBoolean("border.perWorldSetting") ) {
 
 			maxRadius = config.getInt( "worlds." + worldName + "border.maxRadius" );
 			minRadius = config.getInt( "worlds." + worldName + "border.minRadius" );
 			offsetX = config.getInt( "worlds." + worldName + "border.offsetx" );
 			offsetZ = config.getInt( "worlds." + worldName + "border.offsetz" );
+			borderAsRadius = config.getBoolean("worlds." + worldName + ".border.useBorderAsRadiusAroundPlayer");
 			
 		} else {
 			
@@ -34,6 +36,7 @@ public class ConfigLoader {
 			minRadius = config.getInt( "border.minRadius" );
 			offsetX = config.getInt( "border.offsetx" );
 			offsetZ = config.getInt( "border.offsetz" );
+			borderAsRadius = config.getBoolean("border.useBorderAsRadiusAroundPlayer");
 			
 		}
 		
@@ -103,6 +106,10 @@ public class ConfigLoader {
 		return offsetZ;
 	}
 
+	public boolean isBorderAsRadius() {
+		return borderAsRadius;
+	}
+	
 	public int getTries() {
 		return tries;
 	}

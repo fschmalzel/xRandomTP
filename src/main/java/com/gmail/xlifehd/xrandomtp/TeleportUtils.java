@@ -25,8 +25,17 @@ public class TeleportUtils {
 		//Loading the config
 		int maxRadius = config.getMaxRadius();
 		int minRadius = config.getMinRadius();
-		int offsetX = config.getOffsetX();
-		int offsetZ = config.getOffsetZ();
+		int offsetX;
+		int offsetZ;
+		
+		if ( config.isBorderAsRadius() ) {
+			offsetX = player.getLocation().getBlockX();
+			offsetZ = player.getLocation().getBlockZ();
+		} else {
+			offsetX = config.getOffsetX();
+			offsetZ = config.getOffsetZ();
+		}
+		
 		int tries = config.getTries();
 		World world = player.getWorld();
 		
@@ -78,34 +87,6 @@ public class TeleportUtils {
 			//Converting to Cartesian coordinates
 			int x = (int) ( Math.cos( angle ) * distance ) + offsetX;
 			int z = (int) ( Math.sin( angle ) * distance ) + offsetZ;
-			
-//			//Initializing variables for the loop
-//			boolean previousSolid = world.getBlockAt(x, y, z).getType().isSolid();
-//			int y = minHeight;
-//			
-//			//Go from bottom to top to find a safe spot in the nether
-//			do {
-//				
-//				y++;
-//				boolean currentSolid = world.getBlockAt(x, y, z).getType().isSolid();
-//				
-//				if ( previousSolid && !currentSolid) {
-//					
-//					if ( isSafe(world, x, y, z, 3) ) {
-//						
-//						Location loc = new Location( world, x + 0.5, y, z + 0.5 );
-//						player.teleport( loc );
-//						
-//						return true;
-//						
-//					}
-//					
-//				}
-//				
-//				previousSolid = currentSolid;
-//				
-//			} while ( y < maxHeight);
-			
 			
 			//Generate random height and initialize variables for the loop
 			int yUp = (int) (minHeight + ( Math.random() * ( maxHeight - minHeight + 1 ) ));
