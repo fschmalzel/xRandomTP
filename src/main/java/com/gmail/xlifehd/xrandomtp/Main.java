@@ -62,7 +62,7 @@ public class Main extends JavaPlugin {
 		config.addDefault("border.minRadius", 200);
 		config.addDefault("border.offsetx", 0);
 		config.addDefault("border.offsetz", 0);
-		config.addDefault("border.useBorderasRadiusAroundPlayer", 5000);
+		config.addDefault("border.useBorderasRadiusAroundPlayer", false);
 		config.addDefault("teleport.maxTries", 10);
 		config.addDefault("teleport.cooldown", 30);
 		config.addDefault("teleport.cost", 250.0);

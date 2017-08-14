@@ -71,8 +71,17 @@ public class TeleportUtils {
 		int minHeight = config.getMinHeight();
 		int maxRadius = config.getMaxRadius();
 		int minRadius = config.getMinRadius();
-		int offsetX = config.getOffsetX();
-		int offsetZ = config.getOffsetZ();
+		int offsetX;
+		int offsetZ;
+		
+		if ( config.isBorderAsRadius() ) {
+			offsetX = player.getLocation().getBlockX();
+			offsetZ = player.getLocation().getBlockZ();
+		} else {
+			offsetX = config.getOffsetX();
+			offsetZ = config.getOffsetZ();
+		}
+		
 		int tries = config.getTries();
 		
 		World world = player.getWorld();
