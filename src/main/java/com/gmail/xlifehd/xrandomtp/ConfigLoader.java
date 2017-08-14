@@ -24,10 +24,10 @@ public class ConfigLoader {
 		
 		if ( config.getBoolean("border.perWorldSetting") ) {
 
-			maxRadius = config.getInt( "worlds." + worldName + "border.maxRadius" );
-			minRadius = config.getInt( "worlds." + worldName + "border.minRadius" );
-			offsetX = config.getInt( "worlds." + worldName + "border.offsetx" );
-			offsetZ = config.getInt( "worlds." + worldName + "border.offsetz" );
+			maxRadius = config.getInt( "worlds." + worldName + ".border.maxRadius" );
+			minRadius = config.getInt( "worlds." + worldName + ".border.minRadius" );
+			offsetX = config.getInt( "worlds." + worldName + ".border.offsetx" );
+			offsetZ = config.getInt( "worlds." + worldName + ".border.offsetz" );
 			borderAsRadius = config.getBoolean("worlds." + worldName + ".border.useBorderAsRadiusAroundPlayer");
 			
 		} else {
