@@ -77,38 +77,101 @@ public class TeleportUtils {
 			
 			//Converting to Cartesian coordinates
 			int x = (int) ( Math.cos( angle ) * distance ) + offsetX;
-			int y = minHeight;
 			int z = (int) ( Math.sin( angle ) * distance ) + offsetZ;
 			
-			//Initializing variables for the loop
-			boolean previousSolid = world.getBlockAt(x, y, z).getType().isSolid();
+//			//Initializing variables for the loop
+//			boolean previousSolid = world.getBlockAt(x, y, z).getType().isSolid();
+//			int y = minHeight;
+//			
+//			//Go from bottom to top to find a safe spot in the nether
+//			do {
+//				
+//				y++;
+//				boolean currentSolid = world.getBlockAt(x, y, z).getType().isSolid();
+//				
+//				if ( previousSolid && !currentSolid) {
+//					
+//					if ( isSafe(world, x, y, z, 3) ) {
+//						
+//						Location loc = new Location( world, x + 0.5, y, z + 0.5 );
+//						player.teleport( loc );
+//						
+//						return true;
+//						
+//					}
+//					
+//				}
+//				
+//				previousSolid = currentSolid;
+//				
+//			} while ( y < maxHeight);
 			
-			//Go from bottom to top to find a safe spot in the nether
+			
+			//Generate random height and initialize variables for the loop
+			int yUp = (int) (minHeight + ( Math.random() * ( maxHeight - minHeight + 1 ) ));
+			int yDown = yUp;
+			boolean upFinished = false;
+			boolean downFinished = false;
+			boolean previousSolidUp = world.getBlockAt(x, yUp, z).getType().isSolid();
+			boolean previousSolidDown = previousSolidUp;
+			
+			//Go up and down from that yCoordinate until a safe location was found
 			do {
 				
-				y++;
-				boolean currentSolid = world.getBlockAt(x, y, z).getType().isSolid();
-				
-				if ( previousSolid && !currentSolid) {
+				//Go up, if max > yUp
+				if ( yUp <= maxHeight ) {
 					
-					if ( isSafe(world, x, y, z, 3) ) {
+					yUp++;
+					boolean currentSolid = world.getBlockAt(x, yUp, z).getType().isSolid();
+					
+					if ( previousSolidUp && !currentSolid) {
 						
-						Location loc = new Location( world, x + 0.5, y, z + 0.5 );
-						player.teleport( loc );
-						
-						return true;
+						if ( isSafe(world, x, yUp, z, 3) ) {
+							
+							Location loc = new Location( world, x + 0.5, yUp, z + 0.5 );
+							player.teleport( loc );
+							
+							return true;
+							
+						}
 						
 					}
+					previousSolidUp = currentSolid;
 					
+				} else {
+					upFinished = true;
 				}
 				
-				previousSolid = currentSolid;
+				//Go down, if min < yDown
+				if ( yDown >= minHeight ) {
+					
+					yDown--;
+					boolean currentSolid = world.getBlockAt(x, yDown, z).getType().isSolid();
+					
+					if ( !previousSolidDown && currentSolid) {
+						
+						if ( isSafe(world, x, yDown + 1, z, 3) ) {
+							
+							Location loc = new Location( world, x + 0.5, yDown + 1, z + 0.5 );
+							player.teleport( loc );
+							
+							return true;
+							
+						}
+						
+					}
+					previousSolidDown = currentSolid;
+					
+				} else {
+					downFinished = true;
+				}
 				
-			} while ( y < maxHeight);
+			} while ( !downFinished || !upFinished );
 			
 		}
 		
 		return false;
+		
 	}
 	
 	private static boolean isSafe( World world, int x, int y, int z, int height ) {
