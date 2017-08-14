@@ -108,16 +108,16 @@ public class Main extends JavaPlugin {
 	public static void toConsole(int type, String msg) {
 		switch ( type ) {
 		case 1:
-			Main.getPlugin().getLogger().info(infoPrefix + msg);
+			Bukkit.getLogger().info(infoPrefix + msg);
 			break;
 		case 2:
-			Main.getPlugin().getLogger().warning(errorPrefix + msg);
+			Bukkit.getLogger().warning(errorPrefix + msg);
 			break;
 		case 3:
-			Main.getPlugin().getLogger().severe(errorPrefix + msg);
+			Bukkit.getLogger().severe(errorPrefix + msg);
 			break;
 		default:
-			Main.getPlugin().getLogger().info(infoPrefix + msg);
+			Bukkit.getLogger().info(infoPrefix + msg);
 			break;
 		}
 	}

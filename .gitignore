@@ -10,8 +10,3 @@ buildNumber.properties
 
 # Exclude maven wrapper
 !/.mvn/wrapper/maven-wrapper.jar
-target/classes/plugin.yml
-target/maven-archiver/pom.properties
-target/classes/plugin.yml
-target/maven-archiver/pom.properties
-target/classes/plugin.yml
