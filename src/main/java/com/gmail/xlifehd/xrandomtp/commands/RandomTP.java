@@ -19,7 +19,6 @@ import net.milkbowl.vault.economy.EconomyResponse;
 
 public class RandomTP implements CommandExecutor {
 	
-	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		
 		//Checking if it's a player and if the player has the right permissions
@@ -108,7 +107,7 @@ public class RandomTP implements CommandExecutor {
 				}
 				
 			} else {
-				player.sendMessage(Main.infoPrefix + "\"/rtp\" is disabled in this world.");
+			    player.sendMessage(Main.infoPrefix + "\"/rtp\" is disabled in this world.");
 			}
 			
 			return true;
